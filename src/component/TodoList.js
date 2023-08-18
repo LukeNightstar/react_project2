@@ -1,6 +1,6 @@
 import "./TodoList.css";
 import TodoItem from "./TodoItem";
-import {useState} from "react";
+import {useMemo, useState} from "react";
 
 const TodoList = ({todo, onUpdate, onDelete}) => {
 
@@ -17,7 +17,8 @@ const TodoList = ({todo, onUpdate, onDelete}) => {
     };
 
     // Memoization
-    const analyzeTodo = () => {
+    const analyzeTodo = useMemo(() => {
+        // console.log("analyzeTodo 함수 호출")
         const totalCount = todo.length;
         const doneCount = todo.filter((it) => it.isDone).length;
         const notDoneCount = totalCount - doneCount;
@@ -26,9 +27,9 @@ const TodoList = ({todo, onUpdate, onDelete}) => {
             doneCount,
             notDoneCount,
         };
-    };
+    }, [todo]);
 
-    const {totalCount, doneCount, notDoneCount} = analyzeTodo();
+    const {totalCount, doneCount, notDoneCount} = analyzeTodo;
 
     return (
         <div className="TodoList">
