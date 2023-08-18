@@ -2,7 +2,7 @@ import './App.css';
 import Header from "./component/Header";
 import TodoEditor from "./component/TodoEditor";
 import TodoList from "./component/TodoList";
-import {useReducer, useRef} from "react";
+import React, {useCallback, useMemo, useReducer, useRef} from "react";
 import TestComp from "./component/TestComp";
 
 // https://wikidocs.net/book/6507
@@ -42,13 +42,16 @@ function reducer(state, action) {
                 } : it
             );
         }
-        case "DELETE":{
+        case "DELETE": {
             return state.filter((it) => it.id !== action.targetId);
         }
         default:
             return state;
     }
 }
+
+export const TodoStateContext = React.createContext();
+export const TodoDispatchContext = React.createContext();
 
 function App() {
 
@@ -70,28 +73,37 @@ function App() {
     };
 
     // update
-    const onUpdate = (targetId) => {
+    const onUpdate = useCallback((targetId) => {
         dispatch({
             type: "UPDATE",
             targetId,
         });
-    };
+    }, []);
 
     // delete
-    const onDelete = (targetId) => {
+    const onDelete = useCallback((targetId) => {
         dispatch({
             type: "DELETE",
             targetId,
         });
-    };
+    }, []);
+
+    // 기능 최하단에 위치해야함 아니면 오류 발생
+    const memoizedDispatches = useMemo(() => {
+        return { onCreate, onUpdate, onDelete };
+    }, []);
 
     return (
         <div className="App">
             <h2>Hello React</h2>
             <TestComp/>
             <Header/>
-            <TodoEditor onCreate={onCreate}/>
-            <TodoList todo={todo} onUpdate={onUpdate} onDelete={onDelete}/>
+            <TodoStateContext.Provider value={todo}>
+                <TodoDispatchContext.Provider value={memoizedDispatches}>
+                    <TodoEditor/>
+                    <TodoList/>
+                </TodoDispatchContext.Provider>
+            </TodoStateContext.Provider>
         </div>
     );
 }
